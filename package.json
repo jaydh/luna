@@ -1,0 +1,19 @@
+{
+  "name": "luna",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "git@github.com:jaydh/luna.git",
+  "author": "Jay Howard <jay@crickethealth.com>",
+  "license": "MIT",
+  "dependencies": {
+    "mithril": "^2.0.1"
+  },
+  "devDependencies": {
+    "parcel-bundler": "^1.12.3"
+  },
+  "scripts": {
+    "dev": "parcel index.html",
+    "watch": "parcel watch index.html",
+    "build": "parcel build index.html"
+  }
+}

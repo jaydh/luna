@@ -1,0 +1,20 @@
+{
+  "name": "lunaB",
+  "type": "module",
+  "version": "1.0.0",
+  "description": "Backend for Luna",
+  "main": "index.js",
+  "license": "MIT",
+  "dependencies": {
+    "koa": "^2.7.0",
+    "koa-bodyparser": "^4.2.1",
+    "koa-logger": "^3.2.1",
+    "koa-mount": "^4.0.0",
+    "koa-router": "^7.4.0",
+    "koa-static": "^5.0.0",
+    "mongodb": "^3.3.0-beta2"
+  },
+  "scripts": {
+    "start": "node --experimental-modules index.js"
+  }
+}
