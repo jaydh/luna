@@ -13,7 +13,7 @@
   },
   "scripts": {
     "dev": "parcel index.html",
-    "watch": "parcel watch index.html",
-    "build": "parcel build index.html"
+    "watch": "parcel watch -d lunaB/dist index.html",
+    "build": "parcel build -d lunaB/dist index.html"
   }
 }
