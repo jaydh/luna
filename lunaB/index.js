@@ -15,14 +15,17 @@ app.use(router.routes()).use(router.allowedMethods());
 
 app.use(serve("./dist"));
 
+router.get("/api/user/youtubeLibrary", async ctx => {
+  const ids = (await ctx.app.users.findOne({ name: "jay" })).youtubeLibrary;
+  const videos = await ctx.app.youtubeSongs.find({ id: { $in: ids } });
+  ctx.body = await videos.toArray();
+});
+
 router.post("/api/user/addYT", async ctx => {
   const { id } = ctx.request.body;
   const document = await ctx.app.users.findOne({ name: "jay" });
-  if (!document.youtubeLibrary.find(video => video.id === id)) {
-    ctx.app.users.updateOne(
-      { name: "jay" },
-      { $push: { youtubeLibrary: { id } } }
-    );
+  if (!document.youtubeLibrary.includes(id)) {
+    ctx.app.users.updateOne({ name: "jay" }, { $push: { youtubeLibrary: id } });
     if (!(await ctx.app.youtubeSongs.findOne({ id }))) {
       const res = await axios(
         `https://www.googleapis.com/youtube/v3/videos?part=snippet&id=${id}&key=${youtubeAPIKey}`
