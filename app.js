@@ -1,4 +1,6 @@
 import m from "mithril";
+import { youtubeAPIKey } from "./secrets";
+import YoutubePlayer from "./components/YoutubePlayer";
 
 const Data = {
   onSaveSong: e =>
@@ -9,14 +11,15 @@ const Data = {
     }),
   songs: {
     list: [],
-    fetch: function() {
-      m.request({
-        method: "GET",
-        url: "/api/songs"
-      }).then(function(items) {
-        Data.songs.list = items;
-      });
-    }
+    fetch: () =>
+      m
+        .request({
+          method: "GET",
+          url: "/api/songs"
+        })
+        .then(items => {
+          Data.songs.list = items;
+        })
   }
 };
 
@@ -46,7 +49,59 @@ const Songs = {
     )
 };
 
+const SearchYoutube = initialVnode => {
+  let searchQuery = "";
+  let searchResults = [];
+  let selectedVideoId;
+
+  const search = e => {
+    e.preventDefault();
+    m.request({
+      method: "GET",
+      url: `https://www.googleapis.com/youtube/v3/search?key=${youtubeAPIKey}&q=${encodeURIComponent(
+        searchQuery
+      )}&part=snippet&maxResults=25&type=video`
+    }).then(res => {
+      searchResults = res.items;
+    });
+  };
+
+  return {
+    view: vnode =>
+      m("div", [
+        m("form", { onsubmit: search }, [
+          m("label.label", "Search"),
+          m("input[type=text][placeholder=Search Youtube...]", {
+            value: searchQuery,
+            oninput: e => {
+              e.preventDefault();
+              searchQuery = e.target.value;
+            }
+          }),
+          m("button.button[type=button]", { onclick: search }, "Search")
+        ]),
+        selectedVideoId
+          ? m(YoutubePlayer, { selectedVideoId })
+          : m(
+              "ol",
+              searchResults.map(item =>
+                m(
+                  "li",
+                  {
+                    onclick: () => {
+                      selectedVideoId = item.id.videoId;
+                    }
+                  },
+                  item.snippet.description
+                )
+              )
+            )
+      ])
+  };
+};
+
 m.route(document.body, "/", {
   "/": SaveSong,
-  "/songs": Songs
+  "/songs": Songs,
+  "/search": SearchYoutube
 });

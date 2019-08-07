@@ -7,9 +7,9 @@ module.exports = app => {
   client.connect(function(err) {
     assert.equal(null, err);
     console.log("Connected successfully to server");
-    const db = client.db("lunbaB");
+    const db = client.db("lunaB");
 
     app.users = db.collection("users");
-    app.songs = db.collection("songs");
+    app.youtubeSongs = db.collection("youtubeSongs");
   });
 };
