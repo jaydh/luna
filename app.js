@@ -1,6 +1,4 @@
 import m from "mithril";
-import { youtubeAPIKey } from "./secrets";
-import YoutubePlayer from "./components/YoutubePlayer";
 import SearchYoutube from "./components/SearchYoutube";
 
 const Data = {
