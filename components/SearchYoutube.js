@@ -23,7 +23,7 @@ const SearchYoutube = initialVnode => {
     m.request({
       method: "POST",
       url: "/api/user/addYT",
-      body: { id: initialVnode.attrs.selectedVideoId }
+      body: { id: selectedVideoId }
     });
 
   return {
@@ -41,7 +41,7 @@ const SearchYoutube = initialVnode => {
           m("button.button[type=button]", { onclick: search }, "Search")
         ]),
         selectedVideoId
-          ? m(YoutubePlayer, { selectedVideoId })
+          ? m(YoutubePlayer, { id: selectedVideoId })
           : m(
               "ol",
               searchResults.map(item =>
