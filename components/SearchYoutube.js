@@ -1,4 +1,6 @@
 import m from "mithril";
+import { youtubeAPIKey } from "../secrets";
+import YoutubePlayer from "./YoutubePlayer";
 
 const SearchYoutube = initialVnode => {
   let searchQuery = "";
@@ -16,6 +18,13 @@ const SearchYoutube = initialVnode => {
       searchResults = res.items;
     });
   };
+
+  const onSaveSongToLibrary = () =>
+    m.request({
+      method: "POST",
+      url: "/api/user/addYT",
+      body: { id: initialVnode.attrs.selectedVideoId }
+    });
 
   return {
     view: vnode =>
@@ -47,6 +56,8 @@ const SearchYoutube = initialVnode => {
                 )
               )
             ),
+        selectedVideoId &&
+          m("button", { onclick: onSaveSongToLibrary }, "Add to library"),
         m("button", { onclick: () => m.route.set("/") }, "Home")
       ])
   };

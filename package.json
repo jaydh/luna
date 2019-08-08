@@ -6,6 +6,7 @@
   "author": "Jay Howard <jay@crickethealth.com>",
   "license": "MIT",
   "dependencies": {
+    "immer": "^3.2.0",
     "mithril": "^2.0.1"
   },
   "devDependencies": {
