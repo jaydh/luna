@@ -1,15 +1,22 @@
 import m from "mithril";
-import SongList from "./SongList";
 import { playerState } from "../app";
 
 const Library = initialVnode => {
   let songList = [];
+  const currentSong = playerState().currentSong;
 
   const onSongClick = songItem => {
     playerState({
       queue: songList,
       position: 0,
       currentSong: songList[0]
+    });
+  };
+  const onRemoveClick = songItem => {
+    m.request({
+      method: "PATCH",
+      url: "/api/user/youtubeLibrary",
+      body: { id: songItem.id }
     });
   };
 
@@ -20,12 +27,31 @@ const Library = initialVnode => {
         url: "/api/user/youtubeLibrary"
       }).then(res => {
         songList = res;
+        console.log("new library", songList);
       });
     },
-    view: () => [
+    view: vnode => [
       m("div", [
         m("h3", "library"),
-        m(SongList, { songItems: songList, onSongClick })
+        m(
+          "div",
+          songList.map(item =>
+            m("div", { className: "song-item" }, [
+              m(
+                currentSong && currentSong.id === item.id ? "h3" : "h6",
+                {
+                  onclick: () => onSongClick(item)
+                },
+                item.snippet.title
+              ),
+              m(
+                "button",
+                { className: "button-remove", onclick: () => onRemoveClick(item) },
+                "❌"
+              )
+            ])
+          )
+        )
       ])
     ]
   };

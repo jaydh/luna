@@ -7,15 +7,16 @@ const SongList = () => {
       return [
         m(
           "div",
-          songItems.map(item =>
+          songItems.map(item => [
             m(
               currentSong && currentSong.id === item.id ? "h3" : "h6",
               {
                 onclick: item => onSongClick()
               },
               item.snippet.title
-            )
-          )
+            ),
+            m("button", {}, "remove")
+          ])
         )
       ];
     }

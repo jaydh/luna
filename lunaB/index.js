@@ -23,8 +23,8 @@ router.get("/api/user/youtubeLibrary", async ctx => {
 
 router.post("/api/user/addYT", async ctx => {
   const { id } = ctx.request.body;
-  const document = await ctx.app.users.findOne({ name: "jay" });
-  if (!document.youtubeLibrary.includes(id)) {
+  const doc = await ctx.app.users.findOne({ name: "jay" });
+  if (!doc.youtubeLibrary.includes(id)) {
     ctx.app.users.updateOne({ name: "jay" }, { $push: { youtubeLibrary: id } });
     if (!(await ctx.app.youtubeSongs.findOne({ id }))) {
       const res = await axios(
@@ -35,6 +35,19 @@ router.post("/api/user/addYT", async ctx => {
     }
   }
   ctx.body = id;
+});
+
+router.patch("/api/user/youtubeLibrary", async ctx => {
+  const { id } = ctx.request.body;
+  const doc = await ctx.app.users.findOne({ name: "jay" });
+  if (!doc.youtubeLibrary.includes(id)) {
+    ctx.body = "Song not in user library";
+  } else {
+    await ctx.app.users.updateOne(
+      { name: "jay" },
+      { $pull: { youtubeLibrary: id } }
+    );
+  }
 });
 
 router.get("/api/songs", async ctx => {

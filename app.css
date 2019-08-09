@@ -1,0 +1,16 @@
+.song-item {
+  display: grid;
+  grid-template-columns: auto 50px;
+  transition: background-color 400ms ease;
+}
+
+.song-item:hover {
+  background-color: #b1c2de;
+  cursor: pointer;
+}
+
+.button-remove {
+  width: 2em;
+  height: 2em;
+  font-size: 1em;
+}
