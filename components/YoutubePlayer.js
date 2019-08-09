@@ -27,7 +27,6 @@ const YoutubePlayer = initialVnode => {
 
   const onbeforeupdate = (vnode, old) => {
     if (player && vnode.attrs.id !== old.attrs.id) {
-      console.log("call load", vnode.attrs.id);
       player.loadVideoById(vnode.attrs.id);
     }
   };
@@ -51,8 +50,11 @@ const YoutubePlayer = initialVnode => {
     oncreate,
     onbeforeupdate,
     view: vnode => [
-      m("div", { style: { display: "" }, id: vnode.attrs.playerId }),
-      m("script", { src: `https://www.youtube.com/iframe_api` })
+      m(
+        "div",
+        { className: "player-container" },
+        m("div", { id: vnode.attrs.playerId })
+      )
     ]
   };
 };

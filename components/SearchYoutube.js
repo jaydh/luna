@@ -1,6 +1,5 @@
 import m from "mithril";
 import { youtubeAPIKey } from "../secrets";
-import YoutubePlayer from "./YoutubePlayer";
 
 const SearchYoutube = initialVnode => {
   let searchQuery = "";
@@ -40,22 +39,21 @@ const SearchYoutube = initialVnode => {
           }),
           m("button.button[type=button]", { onclick: search }, "Search")
         ]),
-        selectedVideoId
-          ? m(YoutubePlayer, { playerId: "search", id: selectedVideoId })
-          : m(
-              "ol",
-              searchResults.map(item =>
-                m(
-                  "li",
-                  {
-                    onclick: () => {
-                      selectedVideoId = item.id.videoId;
-                    }
-                  },
-                  item.snippet.title
-                )
+        selectedVideoId &&
+          m(
+            "ol",
+            searchResults.map(item =>
+              m(
+                "li",
+                {
+                  onclick: () => {
+                    selectedVideoId = item.id.videoId;
+                  }
+                },
+                item.snippet.title
               )
-            ),
+            )
+          ),
         selectedVideoId &&
           m("button", { onclick: onSaveSongToLibrary }, "Add to library"),
         m("button", { onclick: () => m.route.set("/") }, "Home")

@@ -48,7 +48,7 @@ const Queue = initialVnode => {
                 "div",
                 {
                   className:
-                    currentSong && currentSong.id === item.id && "current-song",
+                    currentSong.id === item.id ? "current-song" : "song-item",
                   onclick: () => onSongClick(index)
                 },
                 item.snippet.title
