@@ -41,7 +41,7 @@ const SearchYoutube = initialVnode => {
           m("button.button[type=button]", { onclick: search }, "Search")
         ]),
         selectedVideoId
-          ? m(YoutubePlayer, { id: selectedVideoId })
+          ? m(YoutubePlayer, { playerId: "search", id: selectedVideoId })
           : m(
               "ol",
               searchResults.map(item =>

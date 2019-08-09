@@ -7,7 +7,7 @@ const YoutubePlayer = initialVnode => {
 
   const oncreate = vnode => {
     window.onYouTubeIframeAPIReady = () => {
-      player = new YT.Player("ytPlayer", {
+      player = new YT.Player(vnode.attrs.playerId, {
         height: "500",
         width: "400",
         videoId: vnode.attrs.id,
@@ -51,7 +51,7 @@ const YoutubePlayer = initialVnode => {
     oncreate,
     onbeforeupdate,
     view: vnode => [
-      m("div", { style: { display: "" }, id: "ytPlayer" }),
+      m("div", { style: { display: "" }, id: vnode.attrs.playerId }),
       m("script", { src: `https://www.youtube.com/iframe_api` })
     ]
   };

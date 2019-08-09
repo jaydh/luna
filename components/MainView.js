@@ -12,7 +12,7 @@ const MainView = initialVnode => {
         "div",
         { style: { display: "grid", gridTemplateColumns: "auto auto" } },
         [
-          m(Library),
+                    m(Library),
           m(Queue),
           m(Player),
           m("button", { onclick: goToSearch }, "Search")

@@ -3,13 +3,12 @@ import { playerState } from "../app";
 
 const Library = initialVnode => {
   let songList = [];
-  const currentSong = playerState().currentSong;
 
-  const onSongClick = songItem => {
+  const onSongClick = position => {
     playerState({
       queue: songList,
-      position: 0,
-      currentSong: songList[0]
+      position,
+      currentSong: songList[position]
     });
   };
   const onRemoveClick = songItem => {
@@ -27,33 +26,39 @@ const Library = initialVnode => {
         url: "/api/user/youtubeLibrary"
       }).then(res => {
         songList = res;
-        console.log("new library", songList);
       });
     },
-    view: vnode => [
-      m("div", [
-        m("h3", "library"),
-        m(
-          "div",
-          songList.map(item =>
-            m("div", { className: "song-item" }, [
-              m(
-                currentSong && currentSong.id === item.id ? "h3" : "h6",
-                {
-                  onclick: () => onSongClick(item)
-                },
-                item.snippet.title
-              ),
-              m(
-                "button",
-                { className: "button-remove", onclick: () => onRemoveClick(item) },
-                "❌"
-              )
-            ])
+    view: vnode => {
+      const currentSong = playerState().currentSong;
+      return [
+        m("div", [
+          m("h3", "library"),
+          m(
+            "div",
+            songList.map((item, index) =>
+              m("div", { className: "song-item" }, [
+                m(
+                  "div",
+                  {
+                    className: currentSong.id === item.id && "current-song",
+                    onclick: () => onSongClick(index)
+                  },
+                  item.snippet.title
+                ),
+                m(
+                  "button",
+                  {
+                    className: "button-remove",
+                    onclick: () => onRemoveClick(item)
+                  },
+                  "❌"
+                )
+              ])
+            )
           )
-        )
-      ])
-    ]
+        ])
+      ];
+    }
   };
 };
 

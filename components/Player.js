@@ -7,7 +7,9 @@ const Player = initialVnode => {
 
   return {
     view: vnode =>
-      m("div", [m(YoutubePlayer, { id: playerState().currentSong.id })])
+      m("div", [
+        m(YoutubePlayer, { playerId: "main", id: playerState().currentSong.id })
+      ])
   };
 };
 
