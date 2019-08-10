@@ -5,7 +5,6 @@ const Progress = initialVnode => {
   return {
     view: vnode => {
       const { currentTime, duration } = playerState();
-      console.log(currentTime, duration);
       return m("div", {
         className: "test",
         style: {

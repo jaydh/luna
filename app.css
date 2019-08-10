@@ -30,3 +30,9 @@
   position: absolute;
   right: -100000px;
 }
+
+.main-view {
+  display: grid;
+  grid-template-columns: auto auto;
+  overflow-x: hidden;
+}

@@ -1,5 +1,9 @@
 const Koa = require("koa");
-const { youtubeAPIKey } = require("../secrets");
+const {
+  youtubeAPIKey,
+  spotifyClientId,
+  spotifyClientSecret
+} = require("../secrets");
 const serve = require("koa-static");
 const Router = require("koa-router");
 const BodyParser = require("koa-bodyparser");
@@ -58,6 +62,42 @@ router.get("/api/songs", async ctx => {
 router.get("/api/users", async ctx => {
   const songs = await ctx.app.users.find({}).toArray();
   ctx.body = songs;
+});
+
+router.get("/spotify", async ctx => {
+  const scopes = "user-read-private user-read-email";
+  ctx.redirect(
+    "https://accounts.spotify.com/authorize" +
+      "?response_type=code" +
+      "&client_id=" +
+      spotifyClientId +
+      (scopes ? "&scope=" + encodeURIComponent(scopes) : "") +
+      "&redirect_uri=" +
+      encodeURIComponent("http://localhost:5000/#!/")
+  );
+});
+
+router.get("/spotify/:code", async ctx => {
+  const { code } = ctx.params;
+  try {
+    const spotifyCreds = await axios({
+      url: "https://accounts.spotify.com/api/token",
+      method: "post",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded"
+      },
+      params: {
+        client_id: spotifyClientId,
+        client_secret: spotifyClientSecret,
+        grant_type: "authorization_code",
+        code,
+        redirect_uri: "http://localhost:5000/#!/"
+      }
+    }).then(res => res.data);
+    await ctx.app.users.updateOne({ name: "jay" }, { $set: { spotifyCreds } });
+  } catch (err) {
+    console.log(err);
+  }
 });
 
 app.listen(5000);
