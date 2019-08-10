@@ -23,6 +23,15 @@ const YoutubePlayer = initialVnode => {
         }
       });
     };
+
+    setInterval(() => {
+      playerState({
+        ...playerState(),
+        currentTime: player.getCurrentTime(),
+        duration: player.getDuration()
+      });
+      m.redraw();
+    }, 250);
   };
 
   const onbeforeupdate = (vnode, old) => {
