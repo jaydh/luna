@@ -12,6 +12,44 @@ const axios = require("axios");
 const app = new Koa();
 const router = new Router();
 
+const server = require("http").createServer(app.callback());
+const io = require("socket.io")(server);
+const SS = io.of("/spotify");
+
+const getUrlParameter = (name, url) => {
+  name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+  var regex = new RegExp("[\\?&]" + name + "=([^&#]*)");
+  var results = regex.exec(url);
+  return results === null
+    ? ""
+    : decodeURIComponent(results[1].replace(/\+/g, " "));
+};
+
+const getSpotifyTokens = code =>
+  axios({
+    url: "https://accounts.spotify.com/api/token",
+    method: "post",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded"
+    },
+    params: {
+      client_id: spotifyClientId,
+      client_secret: spotifyClientSecret,
+      grant_type: "authorization_code",
+      code,
+      redirect_uri: "http://localhost:5000/spotifyAuth"
+    }
+  }).then(res => res.data);
+
+app.use(async (ctx, next) => {
+  SS.on("connection", socket => {
+    socket.on("auth", async code => {
+      console.log("auth");
+    });
+  });
+  await next();
+});
+
 require("./mongo")(app);
 app.use(BodyParser());
 app.use(logger());
@@ -64,6 +102,24 @@ router.get("/api/users", async ctx => {
   ctx.body = songs;
 });
 
+router.get("/spotifyAuth", async ctx => {
+  const currentCode = (await ctx.app.users.findOne({ name: "jay" })).authCode;
+  const code = getUrlParameter("code", ctx.url);
+  if (currentCode !== code) {
+    try {
+      console.log("try");
+      const spotifyCreds = await getSpotifyTokens(code);
+      await ctx.app.users.updateOne(
+        { name: "jay" },
+        { $set: { spotifyCreds }, $set: { authCode: code } }
+      );
+      await ctx.redirect("/");
+    } catch (err) {
+      console.log(err);
+    }
+  }
+});
+
 router.get("/spotify", async ctx => {
   const scopes = "user-read-private user-read-email";
   ctx.redirect(
@@ -73,31 +129,8 @@ router.get("/spotify", async ctx => {
       spotifyClientId +
       (scopes ? "&scope=" + encodeURIComponent(scopes) : "") +
       "&redirect_uri=" +
-      encodeURIComponent("http://localhost:5000/#!/")
+      encodeURIComponent("http://localhost:5000/spotifyAuth")
   );
 });
 
-router.get("/spotify/:code", async ctx => {
-  const { code } = ctx.params;
-  try {
-    const spotifyCreds = await axios({
-      url: "https://accounts.spotify.com/api/token",
-      method: "post",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded"
-      },
-      params: {
-        client_id: spotifyClientId,
-        client_secret: spotifyClientSecret,
-        grant_type: "authorization_code",
-        code,
-        redirect_uri: "http://localhost:5000/#!/"
-      }
-    }).then(res => res.data);
-    await ctx.app.users.updateOne({ name: "jay" }, { $set: { spotifyCreds } });
-  } catch (err) {
-    console.log(err);
-  }
-});
-
-app.listen(5000);
+server.listen(5000);

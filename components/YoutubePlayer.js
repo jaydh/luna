@@ -31,7 +31,7 @@ const YoutubePlayer = initialVnode => {
         duration: player.getDuration()
       });
       m.redraw();
-    }, 250);
+    }, 50);
   };
 
   const onbeforeupdate = (vnode, old) => {

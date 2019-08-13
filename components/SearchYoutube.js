@@ -39,21 +39,21 @@ const SearchYoutube = initialVnode => {
           }),
           m("button.button[type=button]", { onclick: search }, "Search")
         ]),
-        selectedVideoId &&
-          m(
-            "ol",
-            searchResults.map(item =>
-              m(
-                "li",
-                {
-                  onclick: () => {
-                    selectedVideoId = item.id.videoId;
-                  }
-                },
-                item.snippet.title
-              )
+        m(
+          "ol",
+          searchResults.map(item =>
+            m(
+              "li",
+              {
+                onclick: () => {
+                  console.log(item.id);
+                  selectedVideoId = item.id.videoId;
+                }
+              },
+              item.snippet.title
             )
-          ),
+          )
+        ),
         selectedVideoId &&
           m("button", { onclick: onSaveSongToLibrary }, "Add to library"),
         m("button", { onclick: () => m.route.set("/") }, "Home")
