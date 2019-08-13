@@ -27,8 +27,8 @@ const YoutubePlayer = initialVnode => {
     setInterval(() => {
       playerState({
         ...playerState(),
-        currentTime: player.getCurrentTime(),
-        duration: player.getDuration()
+        currentTime: player && player.getCurrentTime(),
+        duration: player && player.getDuration()
       });
       m.redraw();
     }, 50);
@@ -42,7 +42,6 @@ const YoutubePlayer = initialVnode => {
 
   const onPlayerStateChange = event => {
     if (event.data == YT.PlayerState.ENDED) {
-      console.log("callNext song");
       nextSong();
       player.loadVideoById(playerState().currentSong.id);
     }

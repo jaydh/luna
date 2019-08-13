@@ -5,7 +5,8 @@ import Queue from "./Queue";
 import Progress from "./Progress";
 
 const MainView = initialVnode => {
-  const goToSearch = () => m.route.set("/search");
+  const goToYoutubeSearch = () => m.route.set("/search/youtube");
+  const goToSpotifySearch = () => m.route.set("/search/spotify");
 
   return {
     view: vnode =>
@@ -14,7 +15,8 @@ const MainView = initialVnode => {
         m(Queue),
         m(Progress),
         m(Player),
-        m("button", { onclick: goToSearch }, "Search")
+        m("button", { onclick: goToYoutubeSearch }, "Search Youtube"),
+        m("button", { onclick: goToSpotifySearch }, "Search Spotify")
       ])
   };
 };

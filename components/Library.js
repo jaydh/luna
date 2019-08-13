@@ -1,5 +1,6 @@
 import m from "mithril";
 import { playerState } from "../app";
+import { SS } from "../app";
 
 const Library = initialVnode => {
   let songList = [];
@@ -19,15 +20,20 @@ const Library = initialVnode => {
     });
   };
 
-  return {
-    oncreate: vnode => {
-      m.request({
-        method: "GET",
-        url: "/api/user/youtubeLibrary"
-      }).then(res => {
-        songList = res;
+  const oninit = () => {
+    m.request({
+      method: "GET",
+      url: "/api/user/youtubeLibrary"
+    }).then(res => {
+      songList = res;
+      SS.emit("library", null, data => {
+        songList = [...songList, ...data];
       });
-    },
+    });
+  };
+
+  return {
+    oninit,
     view: vnode => {
       const currentSong = playerState().currentSong;
       return [
@@ -43,7 +49,7 @@ const Library = initialVnode => {
                     className: currentSong.id === item.id && "current-song",
                     onclick: () => onSongClick(index)
                   },
-                  item.snippet.title
+                  (item.track && item.track.name) || item.snippet.title
                 ),
                 m(
                   "button",

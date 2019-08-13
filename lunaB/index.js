@@ -11,10 +11,7 @@ const logger = require("koa-logger");
 const axios = require("axios");
 const app = new Koa();
 const router = new Router();
-
 const server = require("http").createServer(app.callback());
-const io = require("socket.io")(server);
-const SS = io.of("/spotify");
 
 const getUrlParameter = (name, url) => {
   name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
@@ -41,21 +38,62 @@ const getSpotifyTokens = code =>
     }
   }).then(res => res.data);
 
-app.use(async (ctx, next) => {
-  SS.on("connection", socket => {
-    socket.on("auth", async code => {
-      console.log("auth");
-    });
-  });
-  await next();
-});
+const getSpotifyToken = async (ctx, uid) =>
+  (await ctx.app.users.findOne({ name: "jay" })).spotifyCreds.access_token;
+
+const searchSpotify = async (token, query) =>
+  await axios({
+    url: `https://api.spotify.com/v1/search?q=${encodeURIComponent(
+      query
+    )}&type=track&limit=25`,
+    method: "get",
+    headers: {
+      Authorization: `Bearer ${token}`
+    },
+    params: { q: query }
+  })
+    .then(res => res.data)
+    .then(data =>
+      data.tracks.items.map(item => ({
+        album: item.album,
+        artists: item.artists,
+        duration_ms: item.duration_ms,
+        id: item.id,
+        name: item.name
+      }))
+    );
+
+const getUserLibrary = async token => {
+  // should compare library to local copy by total copy before refteching all
+  // of it
+
+  let offset = 0;
+  const data = (await axios({
+    url: `https://api.spotify.com/v1/me/tracks?limit=50&offset=${offset}`,
+    method: "get",
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  })).data;
+  const total = data.total;
+  console.log(total);
+  let library = data.items;
+
+  while (library.length < total) {
+    offset++;
+    const data = (await axios({
+      url: `https://api.spotify.com/v1/me/tracks?limit=50&offset=${offset}`,
+      method: "get",
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    })).data;
+    library = [...library, ...data.items];
+  }
+  return library;
+};
 
 require("./mongo")(app);
-app.use(BodyParser());
-app.use(logger());
-app.use(router.routes()).use(router.allowedMethods());
-
-app.use(serve("./dist"));
 
 router.get("/api/user/youtubeLibrary", async ctx => {
   const ids = (await ctx.app.users.findOne({ name: "jay" })).youtubeLibrary;
@@ -107,12 +145,16 @@ router.get("/spotifyAuth", async ctx => {
   const code = getUrlParameter("code", ctx.url);
   if (currentCode !== code) {
     try {
-      console.log("try");
       const spotifyCreds = await getSpotifyTokens(code);
       await ctx.app.users.updateOne(
         { name: "jay" },
-        { $set: { spotifyCreds }, $set: { authCode: code } }
+        { $set: { authCode: code } }
       );
+      await ctx.app.users.updateOne(
+        { name: "jay" },
+        { $set: { spotifyCreds } }
+      );
+
       await ctx.redirect("/");
     } catch (err) {
       console.log(err);
@@ -121,7 +163,7 @@ router.get("/spotifyAuth", async ctx => {
 });
 
 router.get("/spotify", async ctx => {
-  const scopes = "user-read-private user-read-email";
+  const scopes = "user-read-private user-read-email user-library-read";
   ctx.redirect(
     "https://accounts.spotify.com/authorize" +
       "?response_type=code" +
@@ -132,5 +174,38 @@ router.get("/spotify", async ctx => {
       encodeURIComponent("http://localhost:5000/spotifyAuth")
   );
 });
+
+app.use(BodyParser());
+app.use(logger());
+app.use(router.routes()).use(router.allowedMethods());
+
+app.use(async (ctx, next) => {
+  const io = require("socket.io")(server);
+  const SS = io.of("/spotify");
+
+  SS.on("connection", socket => {
+    socket.on("search", async (query, ack) => {
+      try {
+        const token = await getSpotifyToken(ctx);
+        const tracks = await searchSpotify(token, query);
+        ack(tracks);
+      } catch (err) {
+        console.log(err);
+      }
+    });
+    socket.on("library", async (args, ack) => {
+      try {
+        const token = await getSpotifyToken(ctx);
+        const library = await getUserLibrary(token);
+        ack(library);
+      } catch (err) {
+        console.log(err);
+      }
+    });
+  });
+  await next();
+});
+
+app.use(serve("./dist"));
 
 server.listen(5000);
