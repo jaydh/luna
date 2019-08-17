@@ -35,4 +35,11 @@
   display: grid;
   grid-template-columns: auto auto;
   overflow-x: hidden;
+  overflow-y: hidden;
+}
+
+.library,
+.queue {
+  overflow-y: auto;
+  height: 80vh;
 }

@@ -28,6 +28,7 @@ const Library = initialVnode => {
       songList = res;
       SS.emit("library", null, data => {
         songList = [...songList, ...data];
+        m.redraw();
       });
     });
   };
@@ -41,6 +42,7 @@ const Library = initialVnode => {
           m("h3", "library"),
           m(
             "div",
+            { className: "library" },
             songList.map((item, index) =>
               m("div", { className: "song-item" }, [
                 m(

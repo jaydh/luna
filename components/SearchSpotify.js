@@ -9,6 +9,7 @@ const SearchSpotify = initialVnode => {
     e.preventDefault();
     SS.emit("search", searchQuery, data => {
       searchResults = data;
+      m.redraw();
     });
   };
 

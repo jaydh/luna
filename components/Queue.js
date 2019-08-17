@@ -51,7 +51,7 @@ const Queue = initialVnode => {
                     currentSong.id === item.id ? "current-song" : "song-item",
                   onclick: () => onSongClick(index)
                 },
-                item.snippet.title
+                item.snippet ? item.snippet.title : item.track.name
               )
             ])
           ),

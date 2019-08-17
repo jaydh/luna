@@ -25,18 +25,24 @@ const YoutubePlayer = initialVnode => {
     };
 
     setInterval(() => {
-      playerState({
-        ...playerState(),
-        currentTime: player && player.getCurrentTime(),
-        duration: player && player.getDuration()
-      });
-      m.redraw();
+      if (player && playerState().currentSong.snippet) {
+        playerState({
+          ...playerState(),
+          currentTime: player.getCurrentTime(),
+          duration: player.getDuration()
+        });
+        m.redraw();
+      }
     }, 50);
   };
 
   const onbeforeupdate = (vnode, old) => {
-    if (player && vnode.attrs.id !== old.attrs.id) {
+    const { currentSong } = playerState();
+    if (player && vnode.attrs.id !== old.attrs.id && currentSong.snippet) {
       player.loadVideoById(vnode.attrs.id);
+    }
+    if (!currentSong.snippet) {
+      player.stopVideo();
     }
   };
 

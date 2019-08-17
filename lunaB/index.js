@@ -63,7 +63,7 @@ const searchSpotify = async (token, query) =>
       }))
     );
 
-const getUserLibrary = async token => {
+const getUserLibrary = async (token, ctx) => {
   // should compare library to local copy by total copy before refteching all
   // of it
 
@@ -76,21 +76,37 @@ const getUserLibrary = async token => {
     }
   })).data;
   const total = data.total;
-  console.log(total);
-  let library = data.items;
+  const cacheLibrary = (await ctx.app.users.findOne({ name: "jay" }))
+    .spotifyLibrary;
+  if (!cacheLibrary || total > cacheLibrary.length) {
+    let library = data.items;
 
-  while (library.length < total) {
-    offset++;
-    const data = (await axios({
-      url: `https://api.spotify.com/v1/me/tracks?limit=50&offset=${offset}`,
-      method: "get",
-      headers: {
-        Authorization: `Bearer ${token}`
+    while (library.length < total) {
+      offset++;
+      const data = (await axios({
+        url: `https://api.spotify.com/v1/me/tracks?limit=50&offset=${offset}`,
+        method: "get",
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      })).data;
+      if (library.length + 50 > total) {
+        console.log("in");
+        library = [
+          ...library,
+          ...data.items.slice(50 - (library.length + 50 - total))
+        ];
+      } else {
+        library = [...library, ...data.items];
       }
-    })).data;
-    library = [...library, ...data.items];
+    }
+    await ctx.app.users.updateOne(
+      { name: "jay" },
+      { $set: { spotifyLibrary: library } }
+    );
+    return library;
   }
-  return library;
+  return cacheLibrary;
 };
 
 require("./mongo")(app);
@@ -163,7 +179,7 @@ router.get("/spotifyAuth", async ctx => {
 });
 
 router.get("/spotify", async ctx => {
-  const scopes = "user-read-private user-read-email user-library-read";
+  const scopes = "user-read-private user-read-email user-library-read streaming";
   ctx.redirect(
     "https://accounts.spotify.com/authorize" +
       "?response_type=code" +
@@ -196,8 +212,17 @@ app.use(async (ctx, next) => {
     socket.on("library", async (args, ack) => {
       try {
         const token = await getSpotifyToken(ctx);
-        const library = await getUserLibrary(token);
+        const library = await getUserLibrary(token, ctx);
         ack(library);
+      } catch (err) {
+        console.log(err);
+      }
+    });
+    socket.on("token", async (args, ack) => {
+      try {
+        const token = (await ctx.app.users.findOne({ name: "jay" }))
+          .spotifyCreds.access_token;
+        ack(token);
       } catch (err) {
         console.log(err);
       }

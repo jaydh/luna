@@ -7,7 +7,12 @@ import "./cssBaseline.css";
 import "./app.css";
 import io from "socket.io-client";
 export const SS = io("http://localhost:5000/spotify");
-export const playerState = stream({ queue: [], position: 0, currentSong: {} });
+export const playerState = stream({
+  paused: false,
+  queue: [],
+  position: 0,
+  currentSong: {}
+});
 
 m.route(document.body, "/main", {
   "/main": MainView,
