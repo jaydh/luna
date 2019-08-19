@@ -3,13 +3,13 @@ import { playerState } from "../app";
 import { SS } from "../app";
 
 const Library = initialVnode => {
-  let songList = [];
-
   const onSongClick = position => {
+    const prevState = playerState();
     playerState({
-      queue: songList,
+      ...prevState,
+      queue: prevState.library,
       position,
-      currentSong: songList[position]
+      currentSong: prevState.library[position]
     });
   };
   const onRemoveClick = songItem => {
@@ -25,9 +25,10 @@ const Library = initialVnode => {
       method: "GET",
       url: "/api/user/youtubeLibrary"
     }).then(res => {
-      songList = res;
+      playerState({ ...playerState(), library: res });
       SS.emit("library", null, data => {
-        songList = [...songList, ...data];
+        const prevState = playerState();
+        playerState({ ...prevState, library: [...prevState.library, ...data] });
         m.redraw();
       });
     });
@@ -36,36 +37,46 @@ const Library = initialVnode => {
   return {
     oninit,
     view: vnode => {
-      const currentSong = playerState().currentSong;
-      return [
-        m("div", [
-          m("h3", "library"),
-          m(
-            "div",
-            { className: "library" },
-            songList.map((item, index) =>
-              m("div", { className: "song-item" }, [
-                m(
-                  "div",
-                  {
-                    className: currentSong.id === item.id && "current-song",
-                    onclick: () => onSongClick(index)
-                  },
-                  (item.track && item.track.name) || item.snippet.title
-                ),
-                m(
-                  "button",
-                  {
-                    className: "button-remove",
-                    onclick: () => onRemoveClick(item)
-                  },
-                  "❌"
-                )
-              ])
+      const { currentSongId, library } = vnode.attrs;
+      return m("div", [
+        m("h3", "library"),
+        m(
+          "div",
+          { className: "library" },
+          library
+            .sort(
+              (a, b) =>
+                new Date(b.added_at).getTime() - new Date(a.added_at).getTime()
             )
-          )
-        ])
-      ];
+            .map((item, index) =>
+              m(
+                "div",
+                {
+                  className: "song-item",
+                  key: item.track ? item.track.id : item._id
+                },
+                [
+                  m(
+                    "div",
+                    {
+                      className: currentSongId === item._id && "current-song",
+                      onclick: () => onSongClick(index)
+                    },
+                    item.track ? item.track.name : item.snippet.title
+                  ),
+                  m(
+                    "button",
+                    {
+                      className: "button-remove",
+                      onclick: () => onRemoveClick(item)
+                    },
+                    "❌"
+                  )
+                ]
+              )
+            )
+        )
+      ]);
     }
   };
 };

@@ -39,9 +39,9 @@ const YoutubePlayer = initialVnode => {
   const onbeforeupdate = (vnode, old) => {
     const { currentSong } = playerState();
     if (player && vnode.attrs.id !== old.attrs.id && currentSong.snippet) {
-      player.loadVideoById(vnode.attrs.id);
+      player.loadVideoById(currentSong.id);
     }
-    if (!currentSong.snippet) {
+    if (player && player.stopVideo && !currentSong.snippet) {
       player.stopVideo();
     }
   };
@@ -51,13 +51,6 @@ const YoutubePlayer = initialVnode => {
       nextSong();
       player.loadVideoById(playerState().currentSong.id);
     }
-  };
-
-  const playVideo = () => {
-    player.playVideo();
-  };
-  const stopVideo = () => {
-    player.stopVideo();
   };
 
   return {

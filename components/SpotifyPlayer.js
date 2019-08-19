@@ -29,7 +29,7 @@ const SpotifyPlayer = initialVnode => {
 
         player.addListener("player_state_changed", state => {
           if (state.paused && !playerState().paused) {
-						// TODO fix multiple calls
+            // TODO fix multiple calls
             nextSong();
             spotifyPlay();
           }
@@ -47,11 +47,13 @@ const SpotifyPlayer = initialVnode => {
       const { currentSong } = playerState();
       if (player && currentSong.track) {
         player.getCurrentState().then(state => {
-          playerState({
-            ...playerState(),
-            currentTime: state.position,
-            duration: currentSong.track.duration_ms
-          });
+          if (state) {
+            playerState({
+              ...playerState(),
+              currentTime: state.position,
+              duration: currentSong.track.duration_ms
+            });
+          }
           m.redraw();
         });
       }
@@ -72,7 +74,8 @@ const SpotifyPlayer = initialVnode => {
   return {
     oninit,
     onbeforeupdate,
-    view: vnode => m("script", { src: "https://sdk.scdn.co/spotify-player.js" })
+    view: vnode =>
+      token && m("script", { src: "https://sdk.scdn.co/spotify-player.js" })
   };
 };
 

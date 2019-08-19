@@ -9,6 +9,7 @@ import io from "socket.io-client";
 export const SS = io("http://localhost:5000/spotify");
 export const playerState = stream({
   paused: false,
+  library: [],
   queue: [],
   position: 0,
   currentSong: {}

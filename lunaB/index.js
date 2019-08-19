@@ -91,7 +91,6 @@ const getUserLibrary = async (token, ctx) => {
         }
       })).data;
       if (library.length + 50 > total) {
-        console.log("in");
         library = [
           ...library,
           ...data.items.slice(50 - (library.length + 50 - total))
@@ -112,22 +111,31 @@ const getUserLibrary = async (token, ctx) => {
 require("./mongo")(app);
 
 router.get("/api/user/youtubeLibrary", async ctx => {
-  const ids = (await ctx.app.users.findOne({ name: "jay" })).youtubeLibrary;
-  const videos = await ctx.app.youtubeSongs.find({ id: { $in: ids } });
-  ctx.body = await videos.toArray();
+  const items = (await ctx.app.users.findOne({ name: "jay" })).youtubeLibrary;
+  const videos = await (await ctx.app.youtubeSongs.find({
+    id: { $in: items.map(item => item.id) }
+  })).toArray();
+  const res = items.map(item => ({
+    ...item,
+    ...videos.find(vid => vid.id === item.id)
+  }));
+  ctx.body = res;
 });
 
 router.post("/api/user/addYT", async ctx => {
   const { id } = ctx.request.body;
   const doc = await ctx.app.users.findOne({ name: "jay" });
   if (!doc.youtubeLibrary.includes(id)) {
-    ctx.app.users.updateOne({ name: "jay" }, { $push: { youtubeLibrary: id } });
+    ctx.app.users.updateOne(
+      { name: "jay" },
+      { $push: { youtubeLibrary: { id, added_at: Date.now() } } }
+    );
     if (!(await ctx.app.youtubeSongs.findOne({ id }))) {
       const res = await axios(
         `https://www.googleapis.com/youtube/v3/videos?part=snippet&id=${id}&key=${youtubeAPIKey}`
       );
-      const videoItem = res.data.items[0];
-      ctx.app.youtubeSongs.insert(videoItem);
+      const video = res.data.items[0];
+      ctx.app.youtubeSongs.insert(video);
     }
   }
   ctx.body = id;
@@ -141,7 +149,7 @@ router.patch("/api/user/youtubeLibrary", async ctx => {
   } else {
     await ctx.app.users.updateOne(
       { name: "jay" },
-      { $pull: { youtubeLibrary: id } }
+      { $pull: { youtubeLibrary: { id } } }
     );
   }
 });
@@ -179,7 +187,8 @@ router.get("/spotifyAuth", async ctx => {
 });
 
 router.get("/spotify", async ctx => {
-  const scopes = "user-read-private user-read-email user-library-read streaming";
+  const scopes =
+    "user-read-private user-read-email user-library-read streaming";
   ctx.redirect(
     "https://accounts.spotify.com/authorize" +
       "?response_type=code" +

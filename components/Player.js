@@ -4,18 +4,16 @@ import SpotifyPlayer from "./SpotifyPlayer";
 import { playerState } from "../app";
 
 const Player = initialVnode => {
-  let playing = false;
-
   return {
-    view: vnode =>
-      m("div", [
+    view: vnode => {
+      const { currentSong } = playerState();
+      return m("div", [
         m(SpotifyPlayer, {
-          id:
-            playerState().currentSong.track &&
-            playerState().currentSong.track.id
+          id: currentSong.track ? currentSong.track.id : currentSong.id
         }),
-        m(YoutubePlayer, { playerId: "main", id: playerState().currentSong.id })
-      ])
+        m(YoutubePlayer, { playerId: "main", id: currentSong._id })
+      ]);
+    }
   };
 };
 
