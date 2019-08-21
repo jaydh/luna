@@ -74,8 +74,18 @@ const SpotifyPlayer = initialVnode => {
   return {
     oninit,
     onbeforeupdate,
-    view: vnode =>
-      token && m("script", { src: "https://sdk.scdn.co/spotify-player.js" })
+    view: vnode => [
+      token && m("script", { src: "https://sdk.scdn.co/spotify-player.js" }),
+      m(
+        "button",
+        {
+          onclick: () => {
+            SS.emit("refetch");
+          }
+        },
+        "refetch"
+      )
+    ]
   };
 };
 

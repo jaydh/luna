@@ -27,7 +27,7 @@ const getSpotifyTokens = code =>
     url: "https://accounts.spotify.com/api/token",
     method: "post",
     headers: {
-      "Content-Type": "application/x-www-form-urlencoded"
+      "content-type": "application/x-www-form-urlencoded"
     },
     params: {
       client_id: spotifyClientId,
@@ -35,6 +35,21 @@ const getSpotifyTokens = code =>
       grant_type: "authorization_code",
       code,
       redirect_uri: "http://localhost:5000/spotifyAuth"
+    }
+  }).then(res => res.data);
+
+const getRefreshedSpotifyTokens = refresh_token =>
+  axios({
+    url: "https://accounts.spotify.com/api/token",
+    method: "post",
+    headers: {
+      "content-type": "application/x-www-form-urlencoded"
+    },
+    params: {
+      client_id: spotifyClientId,
+      client_secret: spotifyClientSecret,
+      grant_type: "refresh_token",
+      refresh_token
     }
   }).then(res => res.data);
 
@@ -96,7 +111,7 @@ const getUserLibrary = async (token, ctx) => {
           ...data.items.slice(50 - (library.length + 50 - total))
         ];
       } else {
-        library = [...library, ...data.items];
+        libray = [...library, ...data.items];
       }
     }
     await ctx.app.users.updateOne(
@@ -170,6 +185,7 @@ router.get("/spotifyAuth", async ctx => {
   if (currentCode !== code) {
     try {
       const spotifyCreds = await getSpotifyTokens(code);
+      spotifyCreds.expires_at = Date.now() + spotifyCreds.expires_in * 1000;
       await ctx.app.users.updateOne(
         { name: "jay" },
         { $set: { authCode: code } }
@@ -232,6 +248,21 @@ app.use(async (ctx, next) => {
         const token = (await ctx.app.users.findOne({ name: "jay" }))
           .spotifyCreds.access_token;
         ack(token);
+      } catch (err) {
+        console.log(err);
+      }
+    });
+    socket.on("refetch", async (args, ack) => {
+      try {
+        const spotifyCreds = (await ctx.app.users.findOne({ name: "jay" }))
+          .spotifyCreds;
+        const res = await getRefreshedSpotifyTokens(spotifyCreds.refresh_token);
+        res.expires_at = Date.now() + res.expires_in * 1000;
+        await ctx.app.users.updateOne(
+          { name: "jay" },
+          { $set: { spotifyCreds: { ...spotifyCreds, ...res } } }
+        );
+        ack(res);
       } catch (err) {
         console.log(err);
       }
