@@ -59,7 +59,11 @@ const Library = initialVnode => {
                   m(
                     "div",
                     {
-                      className: currentSongId === item._id && "current-song",
+                      className: (item.track
+                      ? currentSongId === item.track.id
+                      : currentSongId === item.id)
+                        ? "current-song"
+                        : "song-item",
                       onclick: () => onSongClick(index)
                     },
                     item.track ? item.track.name : item.snippet.title

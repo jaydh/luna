@@ -13,8 +13,17 @@ const MainView = initialVnode => {
     view: vnode => {
       const { currentSong, library } = playerState();
       return m("div", { className: "main-view" }, [
-        m(Library, { library, currentSongId: currentSong._id }),
-        m(Queue, { currentSongId: currentSong._id }),
+        m(Library, {
+          library,
+          currentSongId: currentSong.track
+            ? currentSong.track.id
+            : currentSong.id
+        }),
+        m(Queue, {
+          currentSongId: currentSong.track
+            ? currentSong.track.id
+            : currentSong.id
+        }),
         m(Progress),
         m(Player),
         m("button", { onclick: goToYoutubeSearch }, "Search Youtube"),

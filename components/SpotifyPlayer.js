@@ -19,28 +19,35 @@ const SpotifyPlayer = initialVnode => {
     });
 
   const oninit = vnode => {
-    SS.emit("token", {}, data => {
-      token = data;
-      window.onSpotifyWebPlaybackSDKReady = () => {
-        player = new Spotify.Player({
-          name: "Luna",
-          getOAuthToken: cb => cb(token)
-        });
+    SS.on("token", incomingToken => {
+      if (!player) {
+        const tag = document.createElement("script");
+        tag.src = "https://sdk.scdn.co/spotify-player.js";
+        const firstScriptTag = document.getElementsByTagName("script")[0];
+        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 
-        player.addListener("player_state_changed", state => {
-          if (state.paused && !playerState().paused) {
-            // TODO fix multiple calls
-            nextSong();
-            spotifyPlay();
-          }
-        });
+        window.onSpotifyWebPlaybackSDKReady = () => {
+          player = new Spotify.Player({
+            name: "Luna",
+            getOAuthToken: cb => cb(incomingToken)
+          });
 
-        player.addListener("ready", ({ device_id }) => {
-          deviceId = device_id;
-          console.log("Ready with Device ID", device_id);
-        });
-        player.connect();
-      };
+          player.addListener("player_state_changed", state => {
+            if (state.paused && !playerState().paused) {
+              // TODO fix multiple calls
+              nextSong();
+              spotifyPlay();
+            }
+          });
+
+          player.addListener("ready", ({ device_id }) => {
+            deviceId = device_id;
+            console.log("Ready with Device ID", device_id);
+          });
+          player.connect();
+        };
+      }
+      token = incomingToken;
     });
 
     setInterval(() => {
@@ -74,18 +81,7 @@ const SpotifyPlayer = initialVnode => {
   return {
     oninit,
     onbeforeupdate,
-    view: vnode => [
-      token && m("script", { src: "https://sdk.scdn.co/spotify-player.js" }),
-      m(
-        "button",
-        {
-          onclick: () => {
-            SS.emit("refetch");
-          }
-        },
-        "refetch"
-      )
-    ]
+    view: vnode => [m("div", "dd")]
   };
 };
 

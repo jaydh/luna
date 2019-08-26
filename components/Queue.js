@@ -34,7 +34,7 @@ const Queue = initialVnode => {
 
   return {
     view: () => {
-      const { queue, currentSong } = playerState();
+      const { queue, currentSongId } = playerState();
       return [
         m("div", [
           m("h3", "queue"),
@@ -47,8 +47,11 @@ const Queue = initialVnode => {
               m(
                 "div",
                 {
-                  className:
-                    currentSong.id === item.id ? "current-song" : "song-item",
+                  className: (item.track
+                  ? currentSongId === item.track.id
+                  : currentSongId === item.id)
+                    ? "current-song"
+                    : "song-item",
                   onclick: () => onSongClick(index)
                 },
                 item.snippet ? item.snippet.title : item.track.name

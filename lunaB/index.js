@@ -225,34 +225,7 @@ app.use(async (ctx, next) => {
   const SS = io.of("/spotify");
 
   SS.on("connection", socket => {
-    socket.on("search", async (query, ack) => {
-      try {
-        const token = await getSpotifyToken(ctx);
-        const tracks = await searchSpotify(token, query);
-        ack(tracks);
-      } catch (err) {
-        console.log(err);
-      }
-    });
-    socket.on("library", async (args, ack) => {
-      try {
-        const token = await getSpotifyToken(ctx);
-        const library = await getUserLibrary(token, ctx);
-        ack(library);
-      } catch (err) {
-        console.log(err);
-      }
-    });
-    socket.on("token", async (args, ack) => {
-      try {
-        const token = (await ctx.app.users.findOne({ name: "jay" }))
-          .spotifyCreds.access_token;
-        ack(token);
-      } catch (err) {
-        console.log(err);
-      }
-    });
-    socket.on("refetch", async (args, ack) => {
+    const emitNewToken = async () => {
       try {
         const spotifyCreds = (await ctx.app.users.findOne({ name: "jay" }))
           .spotifyCreds;
@@ -262,10 +235,37 @@ app.use(async (ctx, next) => {
           { name: "jay" },
           { $set: { spotifyCreds: { ...spotifyCreds, ...res } } }
         );
-        ack(res);
+        socket.emit("token", res.access_token);
       } catch (err) {
         console.log(err);
       }
+    };
+
+    emitNewToken();
+    const tokenRefresher = setInterval(emitNewToken, 18000000);
+
+    socket.on("search", async (query, ack) => {
+      try {
+        const token = await getSpotifyToken(ctx);
+        const tracks = await searchSpotify(token, query);
+        ack(tracks);
+      } catch (err) {
+        console.log(err);
+      }
+    });
+
+    socket.on("library", async (args, ack) => {
+      try {
+        const token = await getSpotifyToken(ctx);
+        const library = await getUserLibrary(token, ctx);
+        ack(library);
+      } catch (err) {
+        console.log(err);
+      }
+    });
+
+    socket.on("disconnect", async () => {
+      clearInterval(tokenRefresher);
     });
   });
   await next();
