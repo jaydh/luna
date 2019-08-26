@@ -81,7 +81,7 @@ const SpotifyPlayer = initialVnode => {
   return {
     oninit,
     onbeforeupdate,
-    view: vnode => [m("div", "dd")]
+    view: vnode => [m("div")]
   };
 };
 

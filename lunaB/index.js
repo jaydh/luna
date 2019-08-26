@@ -93,6 +93,7 @@ const getUserLibrary = async (token, ctx) => {
   const total = data.total;
   const cacheLibrary = (await ctx.app.users.findOne({ name: "jay" }))
     .spotifyLibrary;
+
   if (!cacheLibrary || total > cacheLibrary.length) {
     let library = data.items;
 
@@ -111,7 +112,7 @@ const getUserLibrary = async (token, ctx) => {
           ...data.items.slice(50 - (library.length + 50 - total))
         ];
       } else {
-        libray = [...library, ...data.items];
+        library = [...library, ...data.items];
       }
     }
     await ctx.app.users.updateOne(
