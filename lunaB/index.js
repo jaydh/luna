@@ -34,7 +34,7 @@ const getSpotifyTokens = code =>
       client_secret: spotifyClientSecret,
       grant_type: "authorization_code",
       code,
-      redirect_uri: "http://localhost:5000/spotifyAuth"
+      redirect_uri: "http://luna.jaydanhoward.com/spotifyAuth"
     }
   }).then(res => res.data);
 
@@ -213,7 +213,7 @@ router.get("/spotify", async ctx => {
       spotifyClientId +
       (scopes ? "&scope=" + encodeURIComponent(scopes) : "") +
       "&redirect_uri=" +
-      encodeURIComponent("http://localhost:5000/spotifyAuth")
+      encodeURIComponent("http://luna.jaydanhoward.com/spotifyAuth")
   );
 });
 
