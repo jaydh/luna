@@ -21,10 +21,10 @@
     "prettier": "^1.18.2"
   },
   "scripts": {
-    "dev": "parcel index.html",
-    "watch": "parcel watch -d lunaB/dist index.html",
-    "build": "parcel build -d lunaB/dist index.html",
+    "watch": "parcel watch -d dist index.html",
+    "build": "parcel build -d dist index.html",
     "start-server": "node lunaB/index.js",
+    "dev": "parcel watch -d dist index.html & yarn start-server",
     "deploy": "NODE_ENV=production yarn build && yarn start-server"
   }
 }
