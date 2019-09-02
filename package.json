@@ -6,6 +6,7 @@
   "author": "Jay Howard <jay@crickethealth.com>",
   "license": "MIT",
   "dependencies": {
+    "animejs": "^3.1.0",
     "immer": "^3.2.0",
     "mithril": "^2.0.1",
     "socket.io-client": "^2.2.0"
@@ -22,6 +23,8 @@
   "scripts": {
     "dev": "parcel index.html",
     "watch": "parcel watch -d lunaB/dist index.html",
-    "build": "parcel build -d lunaB/dist index.html"
+    "build": "parcel build -d lunaB/dist index.html",
+    "start-server": "node lunaB/index.js",
+    "deploy": "NODE_ENV=production yarn build && yarn start-server"
   }
 }

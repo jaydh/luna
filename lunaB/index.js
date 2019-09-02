@@ -12,6 +12,7 @@ const axios = require("axios");
 const app = new Koa();
 const router = new Router();
 const server = require("http").createServer(app.callback());
+const isDev = !process.env.NODE_ENV;
 
 const getUrlParameter = (name, url) => {
   name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
@@ -34,7 +35,9 @@ const getSpotifyTokens = code =>
       client_secret: spotifyClientSecret,
       grant_type: "authorization_code",
       code,
-      redirect_uri: "http://luna.jaydanhoward.com/spotifyAuth"
+      redirect_uri: isDev
+        ? "http://localhost:5000/spotifyAuth"
+        : "http://luna.jaydanhoward.com/spotifyAuth"
     }
   }).then(res => res.data);
 
@@ -213,7 +216,11 @@ router.get("/spotify", async ctx => {
       spotifyClientId +
       (scopes ? "&scope=" + encodeURIComponent(scopes) : "") +
       "&redirect_uri=" +
-      encodeURIComponent("http://luna.jaydanhoward.com/spotifyAuth")
+      encodeURIComponent(
+        isDev
+          ? "http://localhost:5000/spotifyAuth"
+          : "http://luna.jaydanhoward.com/spotifyAuth"
+      )
   );
 });
 
