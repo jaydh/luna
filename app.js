@@ -6,7 +6,7 @@ import stream from "mithril/stream";
 import "./cssBaseline.css";
 import "./app.css";
 import io from "socket.io-client";
-export const SS = io("http://luna.jaydanhoward.com/spotify");
+export const SS = io("https://luna.jaydanhoward.com/spotify");
 export const playerState = stream({
   paused: false,
   library: [],
